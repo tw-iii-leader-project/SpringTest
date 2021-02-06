@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>login.html</title>
+<title>index.html</title>
 
 <meta name="keywords" content="keyword1,keyword2,keyword3">
 <meta name="description" content="this is my page">
@@ -21,7 +21,7 @@
 	src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"
 	integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g=="
 	crossorigin="anonymous"></script>
-	
+
 <style>
 .chatWindow {
 	width: 100%;
@@ -46,6 +46,84 @@
 .sendChatValue {
 	width: 90%;
 	height: 40px;
+}
+
+/* pupop */
+body {
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+/* Button used to open the chat form - fixed at the bottom of the page */
+.open-button {
+	background-color: #555;
+	color: white;
+	border: none;
+	cursor: pointer;
+	opacity: 0.8;
+	position: fixed;
+	bottom: 23px;
+	right: 28px;
+	width: 90px;
+}
+
+/* The popup chat - hidden by default */
+.chat-popup {
+	display: none;
+	position: fixed;
+	bottom: 0;
+	right: 15px;
+	border: 3px solid #f1f1f1;
+	z-index: 9;
+}
+
+/* Add styles to the form container */
+.form-container {
+	max-width: 300px;
+	padding: 10px;
+	background-color: white;
+}
+
+/* Full-width textarea */
+.form-container textarea {
+	width: 100%;
+	padding: 15px;
+	margin: 5px 0 22px 0;
+	border: none;
+	background: #f1f1f1;
+	resize: none;
+	min-height: 200px;
+}
+
+/* When the textarea gets focus, do something */
+.form-container textarea:focus {
+	background-color: #ddd;
+	outline: none;
+}
+
+/* Set a style for the submit/send button */
+.form-container .btn {
+	background-color: #4CAF50;
+	color: white;
+	padding: 16px 20px;
+	border: none;
+	cursor: pointer;
+	width: 100%;
+	margin-bottom: 10px;
+	opacity: 0.8;
+}
+
+/* Add a red background color to the cancel button */
+.form-container .cancel {
+	background-color: red;
+}
+
+/* Add some hover effects to buttons */
+.form-container .btn:hover, .open-button:hover {
+	opacity: 1;
 }
 </style>
 
@@ -164,6 +242,15 @@
 				+ chatValue.val() + "</span></p>");
 		chatValue.val("");
 	}
+
+	//popup
+	function openForm() {
+		document.getElementById("myForm").style.display = "block";
+	}
+
+	function closeForm() {
+		document.getElementById("myForm").style.display = "none";
+	}
 </script>
 
 
@@ -172,7 +259,13 @@
 </head>
 
 <body>
-	<div>
+
+<button class="open-button" onclick="openForm()">Chat</button>
+
+	<img class="open-button" onclick="openForm()"
+		src="https://images-tw.girlstyle.com/wp-content/uploads/2021/02/3ca8e698.jpeg">
+		
+	<div class="chat-popup" id="myForm">
 		<div style="float: left; width: 40%">
 			<p>請選擇你是誰：</p>
 			<select id="selectName" onchange="sendAloneUser();">
@@ -184,7 +277,7 @@
 				<option value="ASheng">ASheng</option>
 			</select>
 			<div class="chatWindow">
-				<p style="color: darkgrey">群聊：</p>
+				<p style="color: blue">群聊：</p>
 				<section id="chatRecord" class="chatRecord">
 					<p id="titleval" style="color: #CD2626;"></p>
 				</section>
@@ -221,6 +314,7 @@
 				</section>
 			</div>
 		</div>
+		<button type="button" class="btn cancel" onclick="closeForm()">Close</button>
 	</div>
 	<!-- 獨立JS -->
 	<!-- 	<script type="text/javascript" src="jquery.min.js" charset="utf-8"></script> -->

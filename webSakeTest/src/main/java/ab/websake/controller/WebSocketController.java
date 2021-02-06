@@ -5,6 +5,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import ab.websake.dao.ChatRoomRequest;
 import ab.websake.dao.ChatRoomResponse;
@@ -18,7 +19,12 @@ public class WebSocketController {
 	// 類似http無狀態請求，但是有質的區別
 	// websocket可以從伺服器指定傳送哪個客戶端，而不像http只能響應請求端
 
+	@GetMapping(value="/test")
+	public String test() {
+		return "test";
+	}
 	// 群發
+	
 	@MessageMapping("/massRequest")
 	// SendTo 傳送至 Broker 下的指定訂閱路徑
 	@SendTo("/mass/getResponse")
