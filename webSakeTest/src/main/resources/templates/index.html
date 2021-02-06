@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>login.html</title>
+
+<meta name="keywords" content="keyword1,keyword2,keyword3">
+<meta name="description" content="this is my page">
+<meta name="content-type" content="text/html" charset="UTF-8">
+
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+	integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+	crossorigin="anonymous"></script>
+
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"
+	integrity="sha512-5yJ548VSnLflcRxWNqVWYeQZnby8D8fJTmYRLyvs445j1XmzR8cnWi85lcHx3CUEeAX+GrK3TqTfzOO6LKDpdw=="
+	crossorigin="anonymous"></script>
+
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"
+	integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g=="
+	crossorigin="anonymous"></script>
+	
+<style>
+.chatWindow {
+	width: 100%;
+	height: 500px;
+	border: 1px solid blue;
+}
+
+.chatRecord {
+	width: 100%;
+	height: 400px;
+	border-bottom: 1px solid blue;
+	line-height: 20px;
+	overflow: auto;
+	overflow-x: hidden;
+}
+
+.sendWindow {
+	width: 100%;
+	height: 200px;
+}
+
+.sendChatValue {
+	width: 90%;
+	height: 40px;
+}
+</style>
+
+<script>
+	var stompClient = null;
+
+	//載入完瀏覽器後  呼叫connect（），開啟雙通道
+	$(function() {
+		//開啟雙通道
+		connect()
+	})
+
+	//強制關閉瀏覽器  呼叫websocket.close（）,進行正常關閉
+	window.onunload = function() {
+		disconnect()
+	}
+
+	//開啟雙通道
+	function connect() {
+		var socket = new SockJS(
+				'http://localhost:8080/webSakeTest/endpointOyzc'); //連線SockJS的endpoint名稱為"endpointAric"
+		stompClient = Stomp.over(socket);//使用STMOP子協議的WebSocket客戶端
+		stompClient.connect({}, function(frame) {//連線WebSocket服務端
+
+			console.log('Connected:' + frame);
+			//廣播接收資訊
+			stompTopic();
+
+		});
+	}
+
+	//關閉雙通道
+	function disconnect() {
+		if (stompClient != null) {
+			stompClient.disconnect();
+		}
+		console.log("Disconnected");
+	}
+
+	//廣播（一對多）
+	function stompTopic() {
+		//通過stompClient.subscribe訂閱/topic/getResponse 目標(destination)傳送的訊息（廣播接收資訊）
+		stompClient.subscribe('/mass/getResponse', function(response) {
+			var message = JSON.parse(response.body);
+			//展示廣播的接收的內容接收
+			var response = $("#chatRecord");
+			response.append("<p><span>" + message.name + ":</span><span>"
+					+ message.chatValue + "</span></p>");
+		});
+	}
+
+	//列隊（一對一）
+	function stompQueue() {
+
+		var userId = $("#selectName").val();
+		alert("監聽:" + userId)
+		//通過stompClient.subscribe訂閱/topic/getResponse 目標(destination)傳送的訊息（佇列接收資訊）
+		stompClient.subscribe('/user/' + userId + '/alone/getResponse',
+				function(response) {
+					var message = JSON.parse(response.body);
+					//展示一對一的接收的內容接收
+					var response = $("#chatRecord2");
+					response.append("<p><span>" + message.name
+							+ ":</span><span>" + message.chatValue
+							+ "</span></p>");
+				});
+	}
+
+	//選擇傳送給誰的時候觸發連線伺服器
+	function sendAloneUser() {
+		stompQueue();
+	}
+
+	//群發
+	function sendMassMessage() {
+		var postValue = {};
+		var chatValue = $("#sendChatValue");
+		var userName = $("#selectName").val();
+		postValue.name = userName;
+		postValue.chatValue = chatValue.val();
+		if (userName == 1 || userName == null) {
+			alert("請選擇你是誰！");
+			return;
+		}
+		if (chatValue == "" || userName == null) {
+			alert("不能傳送空訊息！");
+			return;
+		}
+		stompClient.send("/massRequest", {}, JSON.stringify(postValue));
+		chatValue.val("");
+	}
+	//單獨發
+	function sendAloneMessage() {
+		var postValue = {};
+		var chatValue = $("#sendChatValue2");
+		var userName = $("#selectName").val();
+		var sendToId = $("#selectName2").val();
+		var response = $("#chatRecord2");
+		postValue.name = userName;
+		postValue.chatValue = chatValue.val();
+		postValue.userId = sendToId;
+		if (userName == 1 || userName == null) {
+			alert("請選擇你是誰！");
+			return;
+		}
+		if (sendToId == 1 || sendToId == null) {
+			alert("請選擇你要發給誰！");
+			return;
+		}
+		if (chatValue == "" || userName == null) {
+			alert("不能傳送空訊息！");
+			return;
+		}
+		stompClient.send("/aloneRequest", {}, JSON.stringify(postValue));
+		response.append("<p><span>" + userName + ":</span><span>"
+				+ chatValue.val() + "</span></p>");
+		chatValue.val("");
+	}
+</script>
+
+
+
+
+</head>
+
+<body>
+	<div>
+		<div style="float: left; width: 40%">
+			<p>請選擇你是誰：</p>
+			<select id="selectName" onchange="sendAloneUser();">
+				<option value="1">請選擇</option>
+				<option value="ALong">ALong</option>
+				<option value="AKan">AKan</option>
+				<option value="AYuan">AYuan</option>
+				<option value="ALai">ALai</option>
+				<option value="ASheng">ASheng</option>
+			</select>
+			<div class="chatWindow">
+				<p style="color: darkgrey">群聊：</p>
+				<section id="chatRecord" class="chatRecord">
+					<p id="titleval" style="color: #CD2626;"></p>
+				</section>
+				<section class="sendWindow">
+					<textarea name="sendChatValue" id="sendChatValue"
+						class="sendChatValue"></textarea>
+					<input type="button" name="sendMessage" id="sendMessage"
+						class="sendMessage" onclick="sendMassMessage()" value="傳送">
+				</section>
+			</div>
+		</div>
+
+
+		<div style="float: right; width: 40%">
+			<p>請選擇你要發給誰：</p>
+			<select id="selectName2">
+				<option value="1">請選擇</option>
+				<option value="ALong">ALong</option>
+				<option value="AKan">AKan</option>
+				<option value="AYuan">AYuan</option>
+				<option value="ALai">ALai</option>
+				<option value="ASheng">ASheng</option>
+			</select>
+			<div class="chatWindow">
+				<p style="color: darkgrey">單獨聊：</p>
+				<section id="chatRecord2" class="chatRecord">
+					<p id="titleval" style="color: #CD2626;"></p>
+				</section>
+				<section class="sendWindow">
+					<textarea name="sendChatValue2" id="sendChatValue2"
+						class="sendChatValue"></textarea>
+					<input type="button" name="sendMessage" id="sendMessage"
+						class="sendMessage" onclick="sendAloneMessage()" value="傳送">
+				</section>
+			</div>
+		</div>
+	</div>
+	<!-- 獨立JS -->
+	<!-- 	<script type="text/javascript" src="jquery.min.js" charset="utf-8"></script> -->
+	<!-- 	<script type="text/javascript" src="chatroom.js" charset="utf-8"></script> -->
+	<!-- 	<script type="text/javascript" src="sockjs.min.js" charset="utf-8"></script> -->
+	<!-- 	<script type="text/javascript" src="stomp.js" charset="utf-8"></script> -->
+</body>
+</html>
