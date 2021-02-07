@@ -12,7 +12,9 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 //註解開啟使用STOMP協議來傳輸基於代理(message broker)的訊息,這時控制器支援使用@MessageMapping,就像使用@RequestMapping一樣
 @EnableWebSocketMessageBroker
+
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
 
 	@Override
 	//註冊STOMP協議的節點(endpoint),並對映指定的url
@@ -28,6 +30,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.enableSimpleBroker("/topic","/user","/mass","/alone");
         //點對點使用的訂閱字首（客戶端訂閱路徑上會體現出來），不設定的話，預設也是/user/
         registry.setUserDestinationPrefix("/user");
+//        registry.setApplicationDestinationPrefixes("/indexx");
         
 
     }

@@ -18,13 +18,24 @@ public class WebSocketController {
 	// 客戶端主動傳送訊息到服務端，服務端馬上回應指定的客戶端訊息
 	// 類似http無狀態請求，但是有質的區別
 	// websocket可以從伺服器指定傳送哪個客戶端，而不像http只能響應請求端
-
-	@GetMapping(value="/test")
-	public String test() {
-		return "test";
-	}
-	// 群發
 	
+	@GetMapping(value="/indexx")
+	public String indexx() {
+		return "indexx";
+	}
+	
+	@GetMapping(value="/index")
+	public String index() {
+		return "index";
+	}
+	
+	@GetMapping(value="/indexgg")
+	public String indexgg() {
+		return "indexgg";
+	}
+	
+	
+	// 群發
 	@MessageMapping("/massRequest")
 	// SendTo 傳送至 Broker 下的指定訂閱路徑
 	@SendTo("/mass/getResponse")
