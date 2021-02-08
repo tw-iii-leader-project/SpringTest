@@ -149,8 +149,7 @@ body {
 		stompClient.connect({}, function(frame) {//連線WebSocket服務端
 
 			console.log('Connected:' + frame);
-			//廣播接收資訊
-			stompTopic();
+
 
 		});
 	}
@@ -163,32 +162,20 @@ body {
 		console.log("Disconnected");
 	}
 
-// 	//廣播（一對多）
-// 	function stompTopic() {
-// 		//通過stompClient.subscribe訂閱/topic/getResponse 目標(destination)傳送的訊息（廣播接收資訊）
-// 		stompClient.subscribe('/mass/getResponse', function(response) {
-// 			var message = JSON.parse(response.body);
-// 			//展示廣播的接收的內容接收
-// 			var response = $("#chatRecord");
-// 			response.append("<p><span>" + message.name + ":</span><span>"
-// 					+ message.chatValue + "</span></p>");
-// 		});
-// 	}
+
 
 	//列隊（一對一）
 	function stompQueue() {
 
-		var userId = $("#selectName").val();
+		var userId = $("#selectName").val();	//抓userName (登入者名稱)
 		alert("監聽:" + userId)
 		//通過stompClient.subscribe訂閱/topic/getResponse 目標(destination)傳送的訊息（佇列接收資訊）
 		stompClient.subscribe('/user/' + userId + '/alone/getResponse',
 				function(response) {
 					var message = JSON.parse(response.body);
-					//展示一對一的接收的內容接收
-					var response = $("#chatRecord2");
-					response.append("<p><span>" + message.name
-							+ ":</span><span>" + message.chatValue
-							+ "</span></p>");
+	
+
+							$("#chatRecord2").append(`<p><span>${message.name}:</span><span>${message.chatValue}</span></p>`);
 				});
 	}
 
@@ -197,36 +184,19 @@ body {
 		stompQueue();
 	}
 
-// 	//群發
-// 	function sendMassMessage() {
-// 		var postValue = {};
-// 		var chatValue = $("#sendChatValue");
-// 		var userName = $("#selectName").val();
-// 		postValue.name = userName;
-// 		postValue.chatValue = chatValue.val();
-// 		if (userName == 1 || userName == null) {
-// 			alert("請選擇你是誰！");
-// 			return;
-// 		}
-// 		if (chatValue == "" || userName == null) {
-// 			alert("不能傳送空訊息！");
-// 			return;
-// 		}
-// 		stompClient.send("/massRequest", {}, JSON.stringify(postValue));
-// 		chatValue.val("");
-// 	}
+
 
 
 	//單獨發
 	function sendAloneMessage() {
-		var postValue = {};
-		var chatValue = $("#sendChatValue2");
-		var userName = $("#selectName").val();
-		var sendToId = $("#selectName2").val();
-		var response = $("#chatRecord2");
+		var postValue = {};						//陣列
+		var chatValue = $("#sendChatValue2");	//聊天輸入框的值
+		var userName =$("#selectName").val();	//抓發送者者
+		var sendToId =$("#selectName2").val();	//抓接收者
+		var response = $("#chatRecord2");		//訊息顯示框
 		postValue.name = userName;
 		postValue.chatValue = chatValue.val();
-		postValue.userId = sendToId;
+		postValue.userId = sendToId;			//JSON物件 postValue = {登入者,訊息,接收者}
 		if (userName == 1 || userName == null) {
 			alert("請選擇你是誰！");
 			return;
@@ -235,24 +205,21 @@ body {
 			alert("請選擇你要發給誰！");
 			return;
 		}
-		if (chatValue == "" || userName == null) {
+		if (chatValue == "" || chatValue == null) {
 			alert("不能傳送空訊息！");
 			return;
 		}
-		stompClient.send("/aloneRequest", {}, JSON.stringify(postValue));
+		stompClient.send("/aloneRequest", {}, JSON.stringify(postValue));	
 		response.append("<p><span>" + userName + ":</span><span>"
 				+ chatValue.val() + "</span></p>");
 		chatValue.val("");
 	}
 
-	//popup
-	function openForm() {
-		document.getElementById("myForm").style.display = "block";
-	}
+	//賣家頁面一個 [聊天] 按鈕 -> 跳出對話框
 
-	function closeForm() {
-		document.getElementById("myForm").style.display = "none";
-	}
+		
+
+
 </script>
 
 
@@ -262,10 +229,7 @@ body {
 
 <body>
 
-<!-- 	<img class="open-button" onclick="openForm()" -->
-<!-- 		src="https://images-tw.girlstyle.com/wp-content/uploads/2021/02/3ca8e698.jpeg"> -->
-		
-<!-- 	<div class="chat-popup" id="myForm"> -->
+
 	
 	<div>
 		<div style="float: left; width: 40%">
@@ -278,18 +242,7 @@ body {
 				<option value="ALai">ALai</option>
 				<option value="ASheng">ASheng</option>
 			</select>
-<!-- 			<div class="chatWindow"> -->
-<!-- 				<p style="color: blue">群聊：</p> -->
-<!-- 				<section id="chatRecord" class="chatRecord"> -->
-<!-- 					<p id="titleval" style="color: #CD2626;"></p> -->
-<!-- 				</section> -->
-<!-- 				<section class="sendWindow"> -->
-<!-- 					<textarea name="sendChatValue" id="sendChatValue" -->
-<!-- 						class="sendChatValue"></textarea> -->
-<!-- 					<input type="button" name="sendMessage" id="sendMessage" -->
-<!-- 						class="sendMessage" onclick="sendMassMessage()" value="傳送"> -->
-<!-- 				</section> -->
-<!-- 			</div> -->
+
 		</div>
 
 
@@ -316,7 +269,7 @@ body {
 				</section>
 			</div>
 		</div>
-		<button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+		
 	</div>
 	<!-- 獨立JS -->
 	<!-- 	<script type="text/javascript" src="jquery.min.js" charset="utf-8"></script> -->

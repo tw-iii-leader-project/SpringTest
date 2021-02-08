@@ -1,45 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-icons/3.0.1/iconfont/material-icons.min.css">
-    <link rel="stylesheet" href="css/style.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/material-design-icons/3.0.1/iconfont/material-icons.min.css"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+      integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+      crossorigin="anonymous"
+    ></script>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"
+      integrity="sha512-5yJ548VSnLflcRxWNqVWYeQZnby8D8fJTmYRLyvs445j1XmzR8cnWi85lcHx3CUEeAX+GrK3TqTfzOO6LKDpdw=="
+      crossorigin="anonymous"
+    ></script>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"
+      integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g=="
+      crossorigin="anonymous"
+    ></script>
+
     <title>Chat Window</title>
-</head>
-<style>
+  </head>
+  <style></style>
 
-</style>
-<body>
-    
+  <script>
+    var stompClient = null;
 
+    var userMe = "ab";
+    var userHe = "lin";
+
+    //載入完瀏覽器後  呼叫connect（），開啟雙通道
+    $(function () {
+      connect();
+    });
+
+    //強制關閉瀏覽器  呼叫websocket.close（）,進行正常關閉
+    window.onunload = function () {
+      disconnect();
+    };
+
+    //開啟雙通道
+    function connect() {
+      var socket = new SockJS("http://localhost:8080/webSakeTest/endpointOyzc"); //連線SockJS的endpoint名稱為"endpointOyzc"
+      stompClient = Stomp.over(socket); //使用STMOP子協議的WebSocket客戶端
+      stompClient.connect({}, function (frame) {
+        //連線WebSocket服務端
+        console.log("Connected:" + frame);
+      });
+    }
+
+    //關閉雙通道
+    function disconnect() {
+      if (stompClient != null) {
+        stompClient.disconnect();
+      }
+      console.log("Disconnected");
+    }
+
+    //列隊（一對一）
+    $(function () {
+      function stompQueue() {
+        //   var userId = $("#selectName").val(); //抓userName (登入者名稱)
+        //   alert("監聽:" + userId);
+
+        alert("監聽:" + userMe);
+        //通過stompClient.subscribe訂閱/topic/getResponse 目標(destination)傳送的訊息（佇列接收資訊）
+        stompClient.subscribe(
+          "/user/" + userMe + "/alone/getResponse",
+          function (response) {
+            var message = JSON.parse(response.body);
+            $("#chat-area").append(
+              `<div class="income-msg"><img src="img/person.jpg" class="avatar" alt="" /><span class="msg">${message.chatValue}</span></div>`
+            );
+          }
+        );
+      }
+    });
+
+    //單獨發
+    function sendAloneMessage() {
+      var postValue = {}; //陣列存放訊息
+      var chatValue = $("#input-area"); //聊天輸入框的值
+
+      var userName = userMe; //$("#selectName").val(); //抓發送者
+      var sendToId = userHe; //$("#selectName2").val(); //抓接收者
+      var response = $("#chat-area"); //訊息顯示框
+      var userPic = $("#user-pic"); //使用者頭像
+      postValue.name = userName;
+      postValue.chatValue = chatValue.val();
+      postValue.userId = sendToId; //JSON物件 postValue = {發送者,訊息,接收者}
+      if (userName == 1 || userName == null) {
+        alert("請選擇你是誰！");
+        return;
+      }
+      if (sendToId == 1 || sendToId == null) {
+        alert("請選擇你要發給誰！");
+        return;
+      }
+      if (chatValue == "" || chatValue == null) {
+        alert("不能傳送空訊息！");
+        return;
+      }
+      stompClient.send("/aloneRequest", {}, JSON.stringify(postValue));
+      response.append(
+        `<div class="out-msg"><span class="my-msg">${postValue.chatValue}</span><img src="img/me.jpg" class="avatar"></div>`
+      );
+
+      chatValue.val("");
+    }
+
+    //賣家頁面一個 [聊天] 按鈕 -> 跳出對話框
+  </script>
+  <body>
     <section>
-        <h1>Chat Popup</h1>
-        <p>Click on the chat button to start chatting</p>
+      <h1>Chat Popup</h1>
+      <p>Click on the chat button to start chatting</p>
 
-        <button class="chat-btn"> 
-            <i class="material-icons"> comment </i>
-        </button>
+      <button class="chat-btn">
+        <i class="material-icons"> comment </i>
+      </button>
 
-        <div class="chat-popup">
-            <div class="badge">1</div>
-            <div class="chat-area">
-             <div class="income-msg">
-                 <img src="img/person.jpg" class="avatar" alt="">
-                 <span class="msg"> Hi, How can I help you?</span>
-             </div>   
-            </div>
-
-            <div class="input-area">
-                <input type="text">
-                <button id="emoji-btn"> &#127773;</button>
-                <button class="submit"> <i class="material-icons"> send</i></button>
-            </div>
+      <div class="chat-popup">
+        <div class="badge">1</div>
+        <div class="chat-area" id="chat-area">
+          <div class="income-msg">
+                <img src="img/person.jpg" class="avatar" alt="" />  
+                <span class="msg"> Hi, How </span> 
+          </div>
         </div>
-    </section>
 
+        <div class="input-area">
+          <input type="text" id="input-area" />
+          <button id="emoji-btn">&#127773;</button>
+          <button class="submit" onclick="sendAloneMessage()">
+            <i class="material-icons"> send</i>
+          </button>
+        </div>
+      </div>
+    </section>
 
     <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@3.1.1/dist/index.min.js"></script>
     <script src="js/chat.js"></script>
-</body>
+  </body>
 </html>
